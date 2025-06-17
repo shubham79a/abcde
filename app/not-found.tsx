@@ -1,8 +1,10 @@
-// app/_not-found/page.tsx
+// app/not-found.tsx
 'use client';
 
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+
+export const dynamic = 'force-dynamic'; // Important to avoid build errors
 
 function NotFoundContent() {
   const params = useSearchParams();
