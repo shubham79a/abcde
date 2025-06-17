@@ -10,6 +10,7 @@ function DashboardContent({ shop }: { shop: string }) {
   const fetchAuth = useAuthenticatedFetch();
   const [data, setData] = useState<any>(null);
 
+  
   useEffect(() => {
     const fetchShopData = async () => {
       const res = await fetchAuth(`/api/shop?shop=${shop}`);
