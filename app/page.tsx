@@ -1,48 +1,37 @@
 'use client';
 
 import { AppProvider as PolarisAppProvider } from '@shopify/polaris';
-import { Provider as AppBridgeReactProvider, TitleBar } from '@shopify/app-bridge-react';
-import '@shopify/polaris/build/esm/styles.css';
+import { Provider as AppBridgeProvider, TitleBar } from '@shopify/app-bridge-react';
 import { useEffect, useState } from 'react';
-import { useAuthenticatedFetch } from '../utils/autoFetch'; // use your correct relative path
+import '@shopify/polaris/build/esm/styles.css';
 
-function DashboardContent({ shop }: { shop: string }) {
-  const fetchAuth = useAuthenticatedFetch();
-  const [data, setData] = useState<any>(null);
-
-  
-  useEffect(() => {
-    const fetchShopData = async () => {
-      const res = await fetchAuth(`/api/shop?shop=${shop}`);
-      const json = await res.json();
-      setData(json);
-    };
-    fetchShopData();
-  }, []);
-
-  return (
-    <main className="flex flex-col items-center justify-center min-h-screen p-10">
-      <h1 className="text-4xl font-bold mb-4">Ziovy Loyalty Dashboard</h1>
-      <p className="mb-4 text-gray-600">Welcome, store: {shop}</p>
-      <div className="w-full max-w-4xl bg-white rounded-xl shadow-xl p-6">
-        <h2 className="text-2xl font-semibold mb-2">Shop Info</h2>
-        <pre className="text-sm">{JSON.stringify(data, null, 2)}</pre>
-      </div>
-    </main>
-  );
-}
-
-function ClientApp() {
+export default function App() {
   const [host, setHost] = useState('');
   const [shop, setShop] = useState('');
+  const [data, setData] = useState<any>(null);
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    setHost(urlParams.get('host') || '');
-    setShop(urlParams.get('shop') || '');
+    const params = new URLSearchParams(window.location.search);
+    setHost(params.get('host') || '');
+    setShop(params.get('shop') || '');
   }, []);
 
-  if (!host) return <p>Loading app…</p>;
+  useEffect(() => {
+    const fetchShop = async () => {
+      if (!shop) return;
+      try {
+        const res = await fetch(`/api/shop?shop=${shop}`);
+        const json = await res.json();
+        setData(json);
+      } catch (err) {
+        console.error('Failed to load shop info:', err);
+      }
+    };
+
+    fetchShop();
+  }, [shop]);
+
+  if (!host || !shop) return <p>Loading app...</p>;
 
   const config = {
     apiKey: process.env.NEXT_PUBLIC_SHOPIFY_API_KEY!,
@@ -51,13 +40,22 @@ function ClientApp() {
   };
 
   return (
-    <AppBridgeReactProvider config={config}>
+    <AppBridgeProvider config={config}>
       <PolarisAppProvider i18n={{}}>
         <TitleBar title="Ziovy Loyalty Dashboard" />
-        <DashboardContent shop={shop} />
+        <main className="p-6">
+          <h1 className="text-3xl font-bold mb-4">Welcome to Ziovy Loyalty</h1>
+          <p className="text-gray-600 mb-4">Store: {shop}</p>
+          {data ? (
+            <div className="bg-white rounded-lg shadow p-4">
+              <h2 className="text-xl font-semibold mb-2">Shop Info</h2>
+              <pre className="text-sm">{JSON.stringify(data.shop, null, 2)}</pre>
+            </div>
+          ) : (
+            <p>Loading shop info...</p>
+          )}
+        </main>
       </PolarisAppProvider>
-    </AppBridgeReactProvider>
+    </AppBridgeProvider>
   );
 }
-
-export default ClientApp;
