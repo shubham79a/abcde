@@ -5,10 +5,15 @@ import { Provider as AppBridgeProvider, TitleBar } from '@shopify/app-bridge-rea
 import { useEffect, useState } from 'react';
 import '@shopify/polaris/build/esm/styles.css';
 
+interface ShopData {
+  shop: string;
+  // [key: string]: any; // Add this if unsure about all fields
+}
+
 export default function App() {
   const [host, setHost] = useState('');
   const [shop, setShop] = useState('');
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<ShopData | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
